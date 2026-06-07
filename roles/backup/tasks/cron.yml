@@ -1,0 +1,7 @@
+- name: Criar cron diário de backup
+  cron:
+    name: "Backup Moodle completo"
+    hour: "2"
+    minute: "0"
+    job: "ansible-playbook /opt/moodle-infra/playbooks/backup.yml"
+  become: true

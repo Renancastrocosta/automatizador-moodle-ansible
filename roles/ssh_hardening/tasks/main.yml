@@ -1,0 +1,17 @@
+- name: Hardening SSH config
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: present
+  loop:
+    - { regexp: '^#?PermitRootLogin', line: 'PermitRootLogin no' }
+    - { regexp: '^#?PasswordAuthentication', line: 'PasswordAuthentication no' }
+    - { regexp: '^#?PubkeyAuthentication', line: 'PubkeyAuthentication yes' }
+    - { regexp: '^#?AllowUsers', line: 'AllowUsers renan' }
+    - { regexp: '^#?MaxAuthTries', line: 'MaxAuthTries 3' }
+
+- name: Restart SSH service
+  service:
+    name: ssh
+    state: restarted

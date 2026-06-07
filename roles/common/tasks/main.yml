@@ -1,0 +1,48 @@
+- name: Configurar timezone do sistema
+  timezone:
+    name: "{{ system_timezone }}"
+  become: true
+
+- name: Atualizar cache apt
+  apt:
+    update_cache: yes
+    upgrade: dist
+  become: true
+
+- name: Atualizar pacotes
+  apt:
+    upgrade: dist
+  become: true
+
+- name: Instalar pacotes básicos
+  apt:
+    name:
+      - curl
+      - wget
+      - git
+      - unzip
+      - vim
+      - htop
+      - net-tools
+      - ca-certificates
+    state: present
+  become: true
+
+- name: Criar diretórios base
+  file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    mode: "{{ item.mode }}"
+  loop:
+    - { path: "{{ moodle_data_dir }}", owner: "33", group: "33", mode: "0755" }
+    - { path: "{{ postgres_data_dir }}", owner: "999", group: "999", mode: "0700" }
+    - { path: "{{ moodle_backup_dir }}", owner: "0", group: "0", mode: "0755" }
+
+- name: Criar diretório de backup
+  file:
+    path: "{{ moodle_backup_dir }}"
+    state: directory
+    mode: "0755"
+  become: true

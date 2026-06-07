@@ -1,0 +1,13 @@
+- name: Criar daemon.json de segurança Docker
+  copy:
+    dest: /etc/docker/daemon.json
+    content: |
+      {
+        "icc": false,
+        "live-restore": true
+      }
+
+- name: Reiniciar Docker
+  service:
+    name: docker
+    state: restarted

@@ -1,0 +1,27 @@
+---
+- name: Instalar Nginx
+  apt:
+    name: nginx
+    state: present
+
+- name: Criar config do Moodle
+  template:
+    src: moodle.conf.j2
+    dest: /etc/nginx/sites-available/moodle
+
+- name: Ativar site
+  file:
+    src: /etc/nginx/sites-available/moodle
+    dest: /etc/nginx/sites-enabled/moodle
+    state: link
+
+- name: Remover default
+  file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+
+- name: Reiniciar Nginx
+  systemd:
+    name: nginx
+    state: restarted
+    enabled: yes

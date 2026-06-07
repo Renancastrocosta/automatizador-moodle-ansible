@@ -1,0 +1,15 @@
+- name: Backup Moodle
+  hosts: moodle
+  become: true
+  gather_facts: true
+
+  tasks:
+    - name: FORCE VAR CHECK
+      debug:
+        msg:
+          - "{{ inventory_hostname }}"
+          - "{{ group_names }}"
+          - "{{ moodle_backup_dir | default('NOT_SET') }}"
+
+  roles:
+    - backup

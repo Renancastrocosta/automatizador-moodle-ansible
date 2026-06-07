@@ -1,0 +1,16 @@
+- name: Validar variáveis críticas do Moodle
+  assert:
+    that:
+      - moodle_data_dir | length > 0
+      - postgres_data_dir | length > 0
+      - moodle_backup_dir | length > 0
+      - moodle_port is defined
+      - moodle_db_password | length > 0
+      - moodle_domain | length > 0
+      - moodle_wwwroot | length > 0
+      - moodle_admin_password | length > 0
+      - moodle_admin_email | length > 0
+      - system_timezone | length > 0
+    fail_msg: >-
+      Variáveis obrigatórias ausentes. Configure o .env e execute via
+      ./install.sh (ou source bin/load-env.sh antes do ansible-playbook).

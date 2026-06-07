@@ -1,0 +1,25 @@
+- name: Instalar Certbot e plugin nginx
+  apt:
+    name:
+      - certbot
+      - python3-certbot-nginx
+    state: present
+    update_cache: yes
+  become: true
+
+- name: Gerar certificado SSL com Let's Encrypt
+  command: >
+    certbot --nginx
+    -d {{ moodle_domain }}
+    --non-interactive
+    --agree-tos
+    --email {{ letsencrypt_email }}
+  become: true
+
+- name: Garantir renovação automática do SSL
+  cron:
+    name: "Renew Let's Encrypt"
+    job: "certbot renew --quiet"
+    hour: "3"
+    minute: "30"
+  become: true

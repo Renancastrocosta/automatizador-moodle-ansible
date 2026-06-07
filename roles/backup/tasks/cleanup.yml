@@ -1,0 +1,12 @@
+- name: Remover backups antigos (7 dias)
+  find:
+    paths: "{{ moodle_backup_dir }}"
+    age: 7d
+    recurse: yes
+  register: old_backups
+
+- name: Excluir backups antigos
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ old_backups.files }}"

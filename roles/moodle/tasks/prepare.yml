@@ -1,0 +1,13 @@
+---
+- name: Verificar se código do Moodle existe no host
+  stat:
+    path: /opt/moodle/moodle/version.php
+  register: moodle_codigo_host
+
+- name: Clonar código do Moodle no host
+  git:
+    repo: https://github.com/moodle/moodle.git
+    dest: /opt/moodle/moodle
+    version: "{{ moodle_version }}"
+    depth: 1
+  when: not moodle_codigo_host.stat.exists

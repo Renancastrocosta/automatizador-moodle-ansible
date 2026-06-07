@@ -1,0 +1,15 @@
+- name: DEBUG BACKUP DIR
+  debug:
+    msg: "{{ moodle_backup_dir }}"
+
+- name: Executar dump PostgreSQL
+  shell: >
+    docker exec postgres pg_dump -U {{ moodle_db_user }} {{ moodle_db_name }}
+  register: pg_dump
+  become: true
+
+- name: Salvar dump no arquivo
+  copy:
+    content: "{{ pg_dump.stdout }}"
+    dest: "{{ moodle_backup_dir }}/db_{{ ansible_date_time.date }}.sql"
+  become: true

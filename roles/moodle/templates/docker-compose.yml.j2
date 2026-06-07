@@ -1,0 +1,67 @@
+services:
+
+  postgres:
+    image: postgres:{{ postgres_version }}
+    container_name: postgres
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: {{ moodle_db_name }}
+      POSTGRES_USER: {{ moodle_db_user }}
+      POSTGRES_PASSWORD: {{ moodle_db_password }}
+
+    volumes:
+      - {{ postgres_data_dir }}:/var/lib/postgresql/data
+    
+    healthcheck:
+       test: ["CMD-SHELL", "pg_isready -U {{ moodle_db_user }} -d {{ moodle_db_name }}"]
+       interval: 10s
+       timeout: 5s
+       retries: 5
+       start_period: 20s
+
+  moodle:
+    build:
+      context: /opt/moodle
+      dockerfile: Dockerfile
+
+    container_name: moodle
+
+    restart: unless-stopped
+
+    volumes:
+      - {{ moodle_data_dir }}:/var/www/moodledata
+      - /opt/moodle/moodle:/var/www/html
+      - /opt/moodle/php.ini:/usr/local/etc/php/conf.d/moodle.ini:ro
+
+    depends_on:
+      - postgres
+    
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/login/index.php"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  nginx:
+    image: nginx:alpine
+    container_name: nginx-moodle
+    restart: unless-stopped
+
+    ports:
+      - "{{ moodle_port }}:80"
+
+    volumes:
+      - /opt/moodle/nginx.conf:/etc/nginx/conf.d/default.conf
+      - /opt/moodle/moodle:/var/www/html
+
+    depends_on:
+      - moodle
+    
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/login"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s

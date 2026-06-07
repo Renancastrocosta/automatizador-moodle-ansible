@@ -1,0 +1,29 @@
+- name: Default deny incoming
+  ufw:
+    default: deny
+    direction: incoming
+
+- name: Default allow outgoing
+  ufw:
+    default: allow
+    direction: outgoing
+    
+- name: Liberar SSH
+  ufw:
+    rule: allow
+    port: 22
+
+- name: Liberar HTTP
+  ufw:
+    rule: allow
+    port: 80
+
+- name: Liberar HTTPS
+  ufw:
+    rule: allow
+    port: 443
+
+- name: Ativar UFW
+  ufw:
+    state: enabled
+    

@@ -1,0 +1,45 @@
+- name: Verificar espaço em disco
+  shell: df -h {{ moodle_backup_dir }}
+  register: disk
+
+- name: Mostrar espaço disponível
+  debug:
+    var: disk.stdout
+
+- name: Garantir diretório de backup
+  file:
+    path: "{{ moodle_backup_dir }}"
+    state: directory
+  become: true
+  
+- import_tasks: postgres.yml
+- import_tasks: moodledata.yml
+- import_tasks: cleanup.yml
+
+- name: DEBUG FULL VARS
+  debug:
+    var: hostvars[inventory_hostname]
+    
+- name: Garantir diretório de backup
+  file:
+    path: "{{ moodle_backup_dir }}"
+    state: directory
+  become: true
+
+- name: Dump PostgreSQL
+  shell: >
+    docker exec postgres pg_dump -U {{ moodle_db_user }} {{ moodle_db_name }}
+  register: pg_dump
+  become: true
+
+- name: Salvar dump
+  copy:
+    content: "{{ pg_dump.stdout }}"
+    dest: "{{ moodle_backup_dir }}/db_{{ ansible_date_time.date }}.sql"
+  become: true
+
+- name: Compactar moodledata
+  archive:
+    path: "{{ moodle_data_dir }}"
+    dest: "{{ moodle_backup_dir }}/moodledata_{{ ansible_date_time.date }}.tar.gz"
+  become: true

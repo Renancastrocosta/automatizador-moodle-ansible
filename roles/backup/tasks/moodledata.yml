@@ -1,0 +1,5 @@
+- name: Compactar moodledata
+  archive:
+    path: "{{ moodle_data_dir }}"
+    dest: "{{ moodle_backup_dir }}/moodledata_{{ ansible_date_time.date }}.tar.gz"
+  become: true

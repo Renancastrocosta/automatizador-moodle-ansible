@@ -1,0 +1,24 @@
+---
+- name: Moodle Stack
+
+  hosts: moodle
+ 
+  vars_files:
+    - ../group_vars/moodle.yml
+ 
+  pre_tasks:
+    - import_tasks: ../roles/common/tasks/validate.yml
+    
+  become: true
+
+  roles:
+    - common
+    - docker
+    - docker_hardening
+    - moodle
+    - nginx
+    #- ssl #tirar comentário quando tiver domínio
+    - ssh_hardening
+
+    # operação
+    #- backup

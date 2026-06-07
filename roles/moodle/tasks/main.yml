@@ -1,0 +1,40 @@
+---
+- name: Criar diretório base
+  file:
+    path: /opt/moodle
+    state: directory
+
+- name: Copiar Dockerfile
+  copy:
+    src: docker/Dockerfile
+    dest: /opt/moodle/Dockerfile
+
+- name: Copiar nginx config
+  copy:
+    src: nginx.conf
+    dest: /opt/moodle/nginx.conf
+
+- name: Configurar PHP ini
+  template:
+    src: php.ini.j2
+    dest: /opt/moodle/php.ini
+
+- name: Copiar docker-compose
+  template:
+    src: docker-compose.yml.j2
+    dest: /opt/moodle/docker-compose.yml
+
+- import_tasks: prepare.yml
+
+- name: Parar stack Moodle
+  shell: docker compose down
+  ignore_errors: true
+  args:
+    chdir: /opt/moodle
+
+- name: Subir build do Moodle
+  shell: docker compose up -d --build --force-recreate
+  args:
+    chdir: /opt/moodle
+
+- import_tasks: install.yml

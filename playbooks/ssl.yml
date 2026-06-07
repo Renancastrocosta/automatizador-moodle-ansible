@@ -1,0 +1,6 @@
+- name: SSL Moodle
+  hosts: moodle
+  become: true
+
+  roles:
+    - ssl

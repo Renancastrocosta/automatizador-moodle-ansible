@@ -1,0 +1,106 @@
+---
+- name: Aguardar container PostgreSQL estar em execução
+  shell: docker ps --filter "name=^postgres$" --filter "status=running" -q
+  register: postgres_container_ativo
+  until: postgres_container_ativo.stdout | length > 0
+  retries: 60
+  delay: 5
+  changed_when: false
+
+- block:
+    - name: Aguardar PostgreSQL ficar pronto
+      shell: >
+        docker exec postgres pg_isready
+        -U {{ moodle_db_user }}
+        -d {{ moodle_db_name }}
+      register: postgres_pronto
+      until: postgres_pronto.rc == 0
+      retries: 30
+      delay: 5
+      changed_when: false
+  rescue:
+    - name: Exibir logs do PostgreSQL
+      shell: docker logs postgres --tail 50
+      changed_when: false
+
+    - name: Falha ao aguardar PostgreSQL
+      fail:
+        msg: >-
+          PostgreSQL não iniciou corretamente. Causa comum: userns-remap no Docker
+          incompatível com bind mounts. Verifique os logs acima.
+
+- name: Verificar se banco Moodle já foi inicializado
+  shell: >
+    docker exec postgres psql
+    -U {{ moodle_db_user }}
+    -d {{ moodle_db_name }}
+    -tAc "SELECT 1 FROM information_schema.tables
+    WHERE table_schema='public' AND table_name='mdl_config' LIMIT 1"
+  register: moodle_banco_inicializado
+  failed_when: false
+  changed_when: false
+
+- name: Remover config.php de instalação interrompida
+  shell: docker exec moodle rm -f /var/www/html/config.php
+  when:
+    - moodle_banco_inicializado.stdout | trim != '1'
+  changed_when: true
+
+- name: Instalar Moodle via CLI (install.php)
+  shell: >
+    docker exec moodle php /var/www/html/admin/cli/install.php
+    --non-interactive
+    --agree-license
+    --lang={{ moodle_lang }}
+    --wwwroot={{ moodle_wwwroot }}
+    --dataroot=/var/www/moodledata
+    --dbtype=pgsql
+    --dbhost={{ moodle_db_host }}
+    --dbname={{ moodle_db_name }}
+    --dbuser={{ moodle_db_user }}
+    --dbpass={{ moodle_db_password | quote }}
+    --fullname={{ moodle_site_fullname | quote }}
+    --shortname={{ moodle_site_shortname }}
+    --adminuser={{ moodle_admin_user }}
+    --adminpass={{ moodle_admin_password | quote }}
+    --adminemail={{ moodle_admin_email }}
+  when: moodle_banco_inicializado.stdout | trim != '1'
+  register: moodle_instalacao
+  no_log: true
+
+- name: Falha na instalação do Moodle
+  fail:
+    msg: "{{ moodle_instalacao.stderr | default(moodle_instalacao.stdout) }}"
+  when:
+    - moodle_banco_inicializado.stdout | trim != '1'
+    - moodle_instalacao is defined
+    - moodle_instalacao.rc | default(0) != 0
+
+- name: Informar que Moodle já estava instalado
+  debug:
+    msg: "Moodle já instalado (tabela mdl_config encontrada). Pulando install.php."
+  when: moodle_banco_inicializado.stdout | trim == '1'
+
+- name: Sincronizar wwwroot no config.php com o .env
+  shell: >
+    sed -i 's|^\$CFG->wwwroot.*|$CFG->wwwroot   = ''{{ moodle_wwwroot }}'';|'
+    /opt/moodle/moodle/config.php
+  when: moodle_banco_inicializado.stdout | trim == '1'
+  changed_when: true
+
+- name: Ajustar permissões do código Moodle no host
+  file:
+    path: /opt/moodle/moodle
+    state: directory
+    owner: "33"
+    group: "33"
+    recurse: true
+
+- name: Ajustar permissões do moodledata
+  file:
+    path: "{{ moodle_data_dir }}"
+    state: directory
+    owner: "33"
+    group: "33"
+    mode: "0755"
+    recurse: true

@@ -1,0 +1,31 @@
+---
+# Variáveis carregadas do arquivo .env (exportadas antes de rodar o Ansible).
+# Use: ./install.sh  ou  source bin/load-env.sh && ansible-playbook ...
+
+moodle_data_dir: "{{ lookup('env', 'MOODLE_DATA_DIR') | default('/data/moodle', true) }}"
+postgres_data_dir: "{{ lookup('env', 'POSTGRES_DATA_DIR') | default('/data/postgres', true) }}"
+moodle_backup_dir: "{{ lookup('env', 'BACKUP_DIR') | default('/backup', true) }}"
+
+moodle_db_name: "{{ lookup('env', 'MOODLE_DB_NAME') | default('moodle', true) }}"
+moodle_db_user: "{{ lookup('env', 'MOODLE_DB_USER') | default('moodle', true) }}"
+moodle_db_password: "{{ lookup('env', 'MOODLE_DB_PASSWORD') }}"
+
+postgres_version: "{{ lookup('env', 'POSTGRES_VERSION') | default('17', true) }}"
+
+moodle_port: "{{ lookup('env', 'MOODLE_PORT') | default('8080', true) | int }}"
+
+moodle_domain: "{{ lookup('env', 'MOODLE_DOMAIN') | default('moodle.local', true) }}"
+letsencrypt_email: "{{ lookup('env', 'LETSENCRYPT_EMAIL') | default('', true) }}"
+
+system_timezone: "{{ lookup('env', 'TIMEZONE') | default('America/Sao_Paulo', true) }}"
+
+# Instalação CLI
+moodle_version: "{{ lookup('env', 'MOODLE_VERSION') | default('MOODLE_405_STABLE', true) }}"
+moodle_lang: "{{ lookup('env', 'MOODLE_LANG') | default('pt_br', true) }}"
+moodle_db_host: "{{ lookup('env', 'MOODLE_DB_HOST') | default('postgres', true) }}"
+moodle_site_fullname: "{{ lookup('env', 'MOODLE_SITE_FULLNAME') | default('Moodle', true) }}"
+moodle_site_shortname: "{{ lookup('env', 'MOODLE_SITE_SHORTNAME') | default('moodle', true) }}"
+moodle_admin_user: "{{ lookup('env', 'MOODLE_ADMIN_USER') | default('admin', true) }}"
+moodle_admin_password: "{{ lookup('env', 'MOODLE_ADMIN_PASSWORD') }}"
+moodle_admin_email: "{{ lookup('env', 'MOODLE_ADMIN_EMAIL') }}"
+moodle_wwwroot: "{{ lookup('env', 'MOODLE_WWWROOT') | default('http://' + moodle_domain, true) }}"

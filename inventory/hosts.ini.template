@@ -1,0 +1,8 @@
+[moodle]
+
+moodle01 ansible_host=${MOODLE_HOST} ansible_user=${ANSIBLE_USER} ansible_ssh_private_key_file=${ANSIBLE_SSH_PRIVATE_KEY_FILE}
+
+[moodle:vars]
+
+ansible_user=${ANSIBLE_USER}
+ansible_python_interpreter=/usr/bin/python3

@@ -1,0 +1,35 @@
+---
+- name: Atualizar cache apt
+  apt:
+    update_cache: yes
+
+- name: Instalar dependências
+  apt:
+    name:
+      - ca-certificates
+      - curl
+      - gnupg
+      - lsb-release
+    state: present
+
+- name: Instalar Docker
+  apt:
+    name: docker.io
+    state: present
+
+- name: Instalar Docker Compose
+  apt:
+    name: docker-compose-v2
+    state: present
+
+- name: Habilitar Docker
+  service:
+    name: docker
+    enabled: true
+    state: started
+
+- name: Adicionar usuário Ansible ao grupo docker
+  user:
+    name: "{{ ansible_user }}"
+    groups: docker
+    append: yes
