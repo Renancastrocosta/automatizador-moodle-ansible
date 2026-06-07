@@ -81,12 +81,14 @@
     msg: "Moodle já instalado (tabela mdl_config encontrada). Pulando install.php."
   when: moodle_banco_inicializado.stdout | trim == '1'
 
-- name: Sincronizar wwwroot no config.php com o .env
-  shell: >
-    sed -i 's|^\$CFG->wwwroot.*|$CFG->wwwroot   = ''{{ moodle_wwwroot }}'';|'
-    /opt/moodle/moodle/config.php
+- name: Sincronizar config.php com variáveis do .env
+  template:
+    src: config.php.j2
+    dest: /opt/moodle/moodle/config.php
+    owner: "33"
+    group: "33"
+    mode: "0640"
   when: moodle_banco_inicializado.stdout | trim == '1'
-  changed_when: true
 
 - name: Ajustar permissões do código Moodle no host
   file:
