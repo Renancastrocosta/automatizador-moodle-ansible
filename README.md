@@ -575,7 +575,7 @@ moodle-infra/
 ### Não conecta no navegador
 
 1. Verifique se a VM está acessível: `ping IP_DA_VM`
-2. Verifique SSH: `ssh renan@IP_DA_VM`
+2. Verifique SSH: `ssh seu_usuario@IP_DA_VM`
 3. Confirme containers rodando na VM:
 
 ```bash
